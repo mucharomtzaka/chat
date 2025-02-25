@@ -45,3 +45,10 @@ $config['pusher'] = [
 	email: admin@test.com
 	password: 12345678
 
+7. rewrite htaccess untuk menghilangkan  index.php di url 
+	contoh : 
+	RewriteEngine On
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*)$ index.php/$1 [L]
+
