@@ -1,5 +1,5 @@
 1. Clone project  ini  support  php 7.4 
-2. create database dengan nama chat di phpmyadmin dan atur config databasenya 
+2. create database dengan nama chat di phpmyadmin dan atur config databasenya  dan import file sql db.sql 
   contoh: 
    $db['default'] = array(
 	'dsn'	=> '',
