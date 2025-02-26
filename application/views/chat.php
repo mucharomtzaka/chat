@@ -80,7 +80,10 @@
             <!-- Chat Box -->
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header bg-primary text-white" id="chat-header">Select a user to chat</div>
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center" >
+                    <span id="chat-header">Select a user to chat</span>
+                   		 <button id="clear-chat-btn" class="btn btn-sm btn-danger">Clear Chat</button>
+                	</div>
                     <div class="card-body" id="chat-box" style="height: 400px; overflow-y: auto;"></div>
                     <div class="card-footer">
                         <form id="chat-form" class="d-flex">
@@ -262,8 +265,41 @@
             });
         });
 
-        
-		
+
+		document.getElementById("clear-chat-btn").addEventListener("click", function () {
+				let receiverId = document.getElementById("receiver_id").value;
+				
+				if (!receiverId) {
+					alert("Please select a user first!");
+					return;
+				}
+
+				if (!confirm("Are you sure you want to clear the chat?")) return;
+
+				// Clear chat from database
+				fetch("<?= base_url('chat/clear_chat') ?>", {
+					method: "POST",
+					body: new URLSearchParams({ receiver_id: receiverId }),
+					headers: { "Content-Type": "application/x-www-form-urlencoded" }
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.status === "success") {
+						clearChatUI();
+						alert("Chat history cleared successfully!");
+					} else {
+						alert("Error clearing chat: " + data.message);
+					}
+				})
+				.catch(error => console.error("Error:", error));
+			});
+
+			// Function to clear chat UI
+			function clearChatUI() {
+				let chatBox = document.getElementById("chat-box");
+				chatBox.innerHTML = ""; // Remove all messages
+			}
+
 
 		window.addEventListener('beforeunload', function () {
 			clearInterval(messageInterval);

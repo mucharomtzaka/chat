@@ -35,5 +35,10 @@ class Chat_model extends CI_Model {
 		$this->db->where('is_read', 0);
 		return $this->db->update('chat_messages', ['is_read' => 1]);
 	}
+
+	public function clear_chat($user_id, $receiver_id) {
+		$this->db->where("(sender_id = $user_id AND receiver_id = $receiver_id) OR (sender_id = $receiver_id AND receiver_id = $user_id)");
+		$this->db->delete('chat_messages'); // Replace with your table name
+	}
 	
 }

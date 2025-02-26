@@ -56,6 +56,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['chat/send_message'] = 'chat/send_message';
 $route['chat/get_messages'] = 'chat/get_messages';
 $route['chat/mark_as_read'] = 'chat/mark_as_read';
+$route['chat/clear_chat'] 	= 'chat/clear_chat';
 $route['chat'] = 'chat/index';
 $route['dashboard'] = 'dashboard/index';
 $route['chat/pusherauth'] = 'chat/pusherauth';

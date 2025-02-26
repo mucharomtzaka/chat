@@ -87,6 +87,20 @@ class Chat extends CI_Controller {
 	
 		echo json_encode(['status' => 'success']);
 	}
+
+	public function clear_chat() {
+		$user_id = $this->session->userdata('user_id');
+		$receiver_id = $this->input->post('receiver_id');
+	
+		if (!$user_id || !$receiver_id) {
+			echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
+			return;
+		}
+	
+		$this->Chat_model->clear_chat($user_id, $receiver_id); // Call the model function
+	
+		echo json_encode(['status' => 'success', 'message' => 'Chat history cleared']);
+	}
 	
 
 	public function check_session() {
