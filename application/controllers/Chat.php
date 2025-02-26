@@ -11,11 +11,42 @@ class Chat extends CI_Controller {
 		}
     }
 
+	public function pusherauth(){
+		
+		$socket_id = $this->input->post('socket_id');
+		$channel_name = $this->input->post('channel_name');
+
+		if (!$socket_id || !$channel_name) {
+            header('HTTP/1.1 400 Bad Request');
+            echo json_encode(['error' => 'Missing parameters']);
+            exit;
+        }
+
+		// Ensure user is authenticated
+		$user_id = $this->session->userdata('user_id');
+		if (!$user_id) {
+			header('HTTP/1.1 403 Forbidden');
+			echo json_encode(['error' => 'Unauthorized']);
+			exit;
+		}
+	
+		// Ensure user is authorized to subscribe to this channel
+		if ($channel_name !== "private-chat-" . $user_id) {
+			header('HTTP/1.1 403 Forbidden');
+			echo json_encode(['error' => 'Unauthorized channel']);
+			exit;
+		}
+
+		$authorize = $this->pusher_lib->authenticate($socket_id, $channel_name);
+		echo json_encode($authorize);
+	}
+
     public function send_message() {
         $sender_id = $this->session->userdata('user_id');
         $receiver_id = $this->input->post('receiver_id');
         $message = $this->input->post('message');
-
+		$socket_id = $this->input->post('socket_id');
+		
         $data = [
             'sender_id' => $sender_id,
             'receiver_id' => $receiver_id,
@@ -26,9 +57,9 @@ class Chat extends CI_Controller {
 
         $this->Chat_model->save_message($data);
 
-        $this->pusher_lib->trigger('private-chat-' . $receiver_id, 'new_message', $data);
+        $send = $this->pusher_lib->trigger('private-chat-' . $receiver_id, 'new_message', $data,$socket_id);
 
-        echo json_encode(['status' => 'success']);
+        echo json_encode(['status' => 'success' , 'message' => 'Message sent successfully' , 'data' => $send]);
     }
 
 	public function get_messages() {

@@ -58,6 +58,7 @@ $route['chat/get_messages'] = 'chat/get_messages';
 $route['chat/mark_as_read'] = 'chat/mark_as_read';
 $route['chat'] = 'chat/index';
 $route['dashboard'] = 'dashboard/index';
+$route['chat/pusherauth'] = 'chat/pusherauth';
 
 $route['auth/register'] = 'auth/register';
 $route['auth/login'] = 'auth/login';

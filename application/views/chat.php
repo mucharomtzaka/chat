@@ -98,9 +98,50 @@
         let receiverId = null;
         let userId = <?= $this->session->userdata('user_id'); ?>;
 		let messageInterval, unreadInterval;
+		let socket_id = null;
+		let pusher_key = "<?= $this->config->item('pusher')['key']; ?>";
+		let cluster = "<?= $this->config->item('pusher')['cluster']; ?>";
+		let authEndPoint = "<?= base_url('/chat/pusherauth'); ?>";
 
 		 // Load the notification sound
 		 let notificationSound = new Audio("<?= base_url('assets/sound/notifications.mp3'); ?>");
+
+		 // Pusher Configuration
+		 var pusher = new Pusher(pusher_key, {
+            cluster: cluster,
+			authEndpoint:authEndPoint,
+			auth:{
+					headers: {
+						'Content-Type': 'application/json',
+						'X-CSRF-TOKEN': "<?= $this->security->get_csrf_hash(); ?>",
+					},
+					params: () => {
+					return {
+						socket_id: pusher.connection.socket_id, // Fix typo
+						channel_name: "private-chat-" + userId
+					};
+				},
+			},
+        });
+
+		Pusher.logToConsole = false;
+
+		pusher.connection.bind('connected',function (){
+			socket_id = pusher.connection.socket_id;
+			console.log('Connected to Pusher socket id' + socket_id);
+		});
+
+		var channel = pusher.subscribe("private-chat-" + userId);
+
+		channel.bind("pusher:subscription_error", function(status) {
+			console.error("Subscription error:", status);
+		});
+
+        channel.bind("new_message", function(data) {
+            if (data.sender_id == receiverId || data.receiver_id == userId) {
+                fetchMessages();
+            }
+        });
 
 		// Auto-fetch messages every 3 seconds
 		function autoFetchMessages() {
@@ -190,11 +231,21 @@
             event.preventDefault();
             let messageInput = document.getElementById("message");
             let message = messageInput.value.trim();
-            if (message === "" || !receiverId) return alert('Silahkan Pilih User Terlebih dahulu');
+            if (message === "" || !receiverId) {
+				alert('Silahkan Pilih User Terlebih dahulu');
+				return;
+			}
+
+			 // Get Pusher socket ID before sending message
+			 let socketId = pusher.connection.socket_id;
+			if (!socketId) {
+				console.error("Socket ID is missing. Pusher is not connected.");
+				return;
+			}
 
             fetch("<?= base_url('chat/send_message') ?>", {
                 method: "POST",
-                body: new URLSearchParams({ receiver_id: receiverId, message: message }),
+                body: new URLSearchParams({ receiver_id: receiverId, message: message,socket_id:socket_id}),
                 headers: { "Content-Type": "application/x-www-form-urlencoded" }
             })
             .then(response => response.json())
@@ -211,18 +262,8 @@
             });
         });
 
-        // Pusher Configuration
-        var pusher = new Pusher("<?= $this->config->item('pusher_key'); ?>", {
-            cluster: "<?= $this->config->item('pusher_cluster'); ?>",
-            encrypted: true
-        });
-
-        var channel = pusher.subscribe("private-chat-" + userId);
-        channel.bind("new_message", function(data) {
-            if (data.sender_id == receiverId || data.receiver_id == userId) {
-                fetchMessages();
-            }
-        });
+        
+		
 
 		window.addEventListener('beforeunload', function () {
 			clearInterval(messageInterval);

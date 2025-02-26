@@ -23,11 +23,15 @@ class Pusher_lib {
         );
     }
 
-    public function trigger($channel, $event, $data) {
-        return $this->pusher->trigger($channel, $event, $data);
+    public function trigger($channel, $event, $data,$socket_id) {
+        return $this->pusher->trigger($channel, $event, $data, ['socket_id' => $socket_id]);
     }
 
     public function authenticate($socket_id, $channel_name) {
         return $this->pusher->authorizeChannel($channel_name, $socket_id);
     }
+
+	public function getPusher(){
+		return $this->pusher->getPusher();
+	}
 }
